@@ -3,7 +3,7 @@ import tensorflow.contrib.layers as layers
 import numpy as np
 from gym import spaces
 
-from maddpg.trainer.maddpg import MADDPGAgentActor
+from maddpg.trainer.maddpg import MADDPGAgentTrainer as MADDPGAgentActor
 import tensorflow.contrib.layers as layers
 
 
@@ -17,24 +17,24 @@ def mlp_model(input, num_outputs, scope, reuse=False, num_units=64, rnn_cell=Non
         out = layers.fully_connected(out, num_outputs=num_outputs, activation_fn=None)
         return out
 
-def get_actors(env, n_agents):
+def get_actors(env, n_agents, arglist):
     actors = []
     model = mlp_model
     actor = MADDPGAgentActor
     obs_shape_n = [(env.get_obs_size(),) for _ in range(n_agents)]
     for i in range(n_agents):
         actors.append(actor(
-            "agent_%d" % i, model, obs_shape_n, env.action_space(), i))
+            "agent_%d" % i, model, obs_shape_n, env.action_space(), i, arglist))
     return actors
 
-def get_leader_actors(env, n_groups):
+def get_leader_actors(env, n_groups, arglist):
     actors = []
     model = mlp_model
     actor = MADDPGAgentActor
     obs_shape_n = [(env.get_obs_size() * 2, ), (env.get_obs_size() * 7, ), (env.get_obs_size(), )]
     for i in range(n_groups):
         actors.append(actor(
-            "leader_%d" % i, model, obs_shape_n, [spaces.Discrete(3) for _ in range(n_groups)], i))
+            "leader_%d" % i, model, obs_shape_n, [spaces.Discrete(3) for _ in range(n_groups)], i, arglist))
     return actors
 
 def get_actions(actors, obs, env, side):

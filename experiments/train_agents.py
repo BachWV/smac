@@ -25,7 +25,7 @@ def parse_args():
     # Environment
     # TODO(alan): change to pass from smac_maps's config
     parser.add_argument("--max-episode-len", type=int, default=150, help="maximum episode length")
-    parser.add_argument("--num-episodes", type=int, default=60000, help="number of episodes")
+    parser.add_argument("--num-episodes", type=int, default=100, help="number of episodes")
     parser.add_argument("--num-adversaries", type=int, default=0, help="number of adversaries")
     parser.add_argument("--good-policy", type=str, default="maddpg", help="policy for good agents")
     parser.add_argument("--adv-policy", type=str, default="maddpg", help="policy of adversaries")
@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument("--num-units", type=int, default=64, help="number of units in the mlp")
     # Checkpointing
     parser.add_argument("--exp-name", type=str, default='maddpg_in_smac', help="name of the experiment")
-    parser.add_argument("--save-dir", type=str, default="/home/alantang/agents_policy/", help="directory in which training state and model should be saved")
+    parser.add_argument("--save-dir", type=str, default="C:\\Users\\Charon\\Desktop\\code\\star\\smacTang\\experiments\\policy\\agents_policy", help="directory in which training state and model should be saved")
     parser.add_argument("--save-rate", type=int, default=100, help="save model once every time this many episodes are completed")
     parser.add_argument("--load-dir", type=str, default="", help="directory in which training state and model are loaded")
     # Evaluation
@@ -44,8 +44,8 @@ def parse_args():
     parser.add_argument("--display", action="store_true", default=False)
     parser.add_argument("--benchmark", action="store_true", default=False)
     parser.add_argument("--benchmark-iters", type=int, default=100000, help="number of iterations run for benchmarking")
-    parser.add_argument("--benchmark-dir", type=str, default="./benchmark_files/", help="directory where benchmark data is saved")
-    parser.add_argument("--plots-dir", type=str, default="./learning_curves/", help="directory where plot data is saved")
+    parser.add_argument("--benchmark-dir", type=str, default="C:\\Users\\Charon\\Desktop\\code\\star\\smacTang\\experiments\\policy\\agents_policy\\benchmark_files\\", help="directory where benchmark data is saved")
+    parser.add_argument("--plots-dir", type=str, default="C:\\Users\\Charon\\Desktop\\code\\star\\smacTang\\experiments\\policy\\agents_policy\\learning_curves\\", help="directory where plot data is saved")
     return parser.parse_args()
 
 def mlp_model(input, num_outputs, scope, reuse=False, num_units=64, rnn_cell=None):
@@ -70,7 +70,7 @@ def get_trainers(env, n_agents, obs_shape_n, arglist):
 
 def train(arglist):
     # TODO(alan) : Set multi-cpu to boost training
-    with U.multi_threaded_session():
+    with U.single_threaded_session():
         # Create environment
         env = StarCraft2Env(map_name="MMM_redirect_train", difficulty='5')
         env_info = env.get_env_info()
@@ -86,7 +86,7 @@ def train(arglist):
 
         # Initialize
         U.initialize()
-
+        print("here")
         # Load previous results, if necessary
         if arglist.load_dir == "":
             arglist.load_dir = arglist.save_dir
@@ -187,8 +187,9 @@ def train(arglist):
             # save model, display training output
             if terminal and (len(episode_rewards) % arglist.save_rate == 0):
                 latest_won_rate = round(np.mean(episode_win[-arglist.save_rate:]), 2)
+                print(latest_won_rate)
                 won_rate.append(latest_won_rate)
-                U.save_state(arglist.save_dir, latest_won_rate, saver)
+                U.save_state(arglist.save_dir,saver)
                 # TODO(alan): check the difference
                 # print statement depends on whether or not there are adversaries
                 # if num_adversaries == 0:
@@ -234,3 +235,4 @@ def train(arglist):
 if __name__ == '__main__':
     arglist = parse_args()
     train(arglist)
+    

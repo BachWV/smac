@@ -98,7 +98,7 @@ class StarCraft2Env(MultiAgentEnv):
         window_size_y=1200,
         heuristic_ai=False,
         heuristic_rest=False,
-        debug=False,
+        debug=True,
     ):
         """
         Create a StarCraftC2Env environment.
@@ -289,7 +289,7 @@ class StarCraft2Env(MultiAgentEnv):
         self._run_config = None
         self._sc2_proc = None
         self._controllers = None
-        self._parallel = run_parallel.RunParallel()
+       # self._parallel = run_parallel.RunParallel()
 
         # Try to avoid leaking SC2 processes on shutdown
         atexit.register(lambda: self.close())
@@ -343,8 +343,11 @@ class StarCraft2Env(MultiAgentEnv):
                                           base_port=self._ports[i * 2 + 3])
             join_reqs.append(join)
 
-        self._parallel.run((c.join_game, join)
-                           for c, join in zip(self._controllers, join_reqs))
+        # self._parallel.run((c.join_game, join)
+        #                     for c, join in zip(self._controllers, join_reqs))
+        # 串行执行 join_game 方法
+        for controller, join_req in zip(self._controllers, join_reqs):
+            controller.join_game(join_req)
 
         # join = sc_pb.RequestJoinGame(race=races[self._agent_race],
         #                              options=interface_options)
@@ -468,15 +471,31 @@ class StarCraft2Env(MultiAgentEnv):
         # Send action request
         # req_actions = sc_pb.RequestAction(actions=sc_actions_both_sides[0])
 
+        # try:
+        #     # TODO(alan): TBD
+        #     # self._controllers[0].actions(req_actions)
+        #     self._parallel.run((c.actions, sc_pb.RequestAction(actions=a))
+        #                        for c, a in zip(self._controllers, sc_actions_both_sides))
+        #     # Make step in SC2, i.e. apply actions
+        #     # self._controllers[0].step(self._step_mul)
+        #     self._parallel.run((c.step, self._step_mul) for c in self._controllers)
+        #     # Observe here so that we know if the episode is over.
+        #     self._obs = self._controllers[0].observe()
+        # except (protocol.ProtocolError, protocol.ConnectionError):
+        #     self.full_restart()
+        #     return [0] * self.n_agents, True, {}
+
+        logging.set_verbosity(logging.DEBUG)
+       # ------------------------------------------
+        # 逐行执行 actions
+        for controller, actions in zip(self._controllers, sc_actions_both_sides):
+            controller.actions(sc_pb.RequestAction(actions=actions))
+
+        # 逐行执行 step
+        for controller in self._controllers:
+            controller.step(self._step_mul)
+
         try:
-            # TODO(alan): TBD
-            # self._controllers[0].actions(req_actions)
-            self._parallel.run((c.actions, sc_pb.RequestAction(actions=a))
-                               for c, a in zip(self._controllers, sc_actions_both_sides))
-            # Make step in SC2, i.e. apply actions
-            # self._controllers[0].step(self._step_mul)
-            self._parallel.run((c.step, self._step_mul) for c in self._controllers)
-            # Observe here so that we know if the episode is over.
             self._obs = self._controllers[0].observe()
         except (protocol.ProtocolError, protocol.ConnectionError):
             self.full_restart()
@@ -534,7 +553,7 @@ class StarCraft2Env(MultiAgentEnv):
             self.timeouts += 1
 
         if self.debug:
-            logging.debug("Reward = {}".format(reward).center(60, '-'))
+            logging.debug("Reward = {}".format(self.reward_win).center(60, '-'))
 
         if terminated:
             self._episode_count += 1

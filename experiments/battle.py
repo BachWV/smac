@@ -7,8 +7,7 @@ import tensorflow as tf
 import numpy as np
 from algos.algo_util import get_actors, get_actions, get_leader_actors
 
-from train_group_leader import p2a
-from train_agents import parse_args
+from experiments.train_group_leader import p2a
 def parse_args():
     parser = argparse.ArgumentParser("Reinforcement Learning experiments for multiagent environments")
     # Environment
@@ -25,7 +24,7 @@ def parse_args():
     parser.add_argument("--num-units", type=int, default=64, help="number of units in the mlp")
     # Checkpointing
     parser.add_argument("--exp-name", type=str, default='maddpg_in_smac', help="name of the experiment")
-    parser.add_argument("--save-dir", type=str, default="C:\\Users\\Charon\\Desktop\\code\\star\\smacTang\\experiments\\policy\\agents_policy", help="directory in which training state and model should be saved")
+    parser.add_argument("--save-dir", type=str, default="/root/smac/experiments/policy/agents_policy", help="directory in which training state and model should be saved")
     parser.add_argument("--save-rate", type=int, default=100, help="save model once every time this many episodes are completed")
     parser.add_argument("--load-dir", type=str, default="", help="directory in which training state and model are loaded")
     # Evaluation
@@ -49,14 +48,15 @@ def main():
     g1 = tf.Graph()
     g2 = tf.Graph()
 
-    leaders_sess = tf.Session(graph=g1)
-    agents_sess = tf.Session(graph=g2)
+    #leaders_sess = tf.Session(graph=g1)
+    leaders_sess = tf.compat.v1.Session(graph=g1)
+    agents_sess = tf.compat.v1.Session(graph=g2)
     arglist = parse_args()
     with leaders_sess.as_default():
         with g1.as_default():
             leaders = get_leader_actors(env, n_groups, arglist)
             U.initialize()
-            U.load_state("C:\\Users\\Charon\\Desktop\\code\\star\\smacTang\\experiments\\policy\\leaders_policy\\")
+            U.load_state("/root/smac/experiments/policy/leaders_policy/")
             print("load leaders")
 
 
@@ -67,7 +67,7 @@ def main():
             blue_actors = red_actors[:]
 
             U.initialize()
-            U.load_state("C:\\Users\\Charon\\Desktop\\code\\star\\smacTang\\experiments\\policy\\agents_policy\\")
+            U.load_state("/root/smac/experiments/policy/agents_policy/")
             print("load agents state")
 
     for e in range(n_episodes):

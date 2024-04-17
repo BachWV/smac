@@ -7,7 +7,7 @@ import random
 
 import maddpg.common.tf_util as U
 from maddpg.trainer.maddpg import MADDPGAgentTrainer
-import tensorflow.contrib.layers as layers
+# import tensorflow.keras.layers as layers
 
 from smac.env import StarCraft2Env
 
@@ -46,7 +46,7 @@ POLICY_NUM = 3
 
 def mlp_model(input, num_outputs, scope, reuse=False, num_units=64, rnn_cell=None):
     # This model takes as input an observation and returns values of all actions
-    with tf.variable_scope(scope, reuse=reuse):
+    with tf_v1.placeholder(scope, reuse=reuse):
         out = input
         out = layers.fully_connected(out, num_outputs=num_units, activation_fn=tf.nn.relu)
         out = layers.fully_connected(out, num_outputs=num_units, activation_fn=tf.nn.relu)

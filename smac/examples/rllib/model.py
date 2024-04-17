@@ -40,7 +40,7 @@ class MaskedActionsModel(Model):
             name="fc_out")
 
         # Mask out invalid actions (use tf.float32.min for stability)
-        inf_mask = tf.maximum(tf.log(action_mask), tf.float32.min)
+        inf_mask = tf.maximum(tf.math.log(action_mask), tf.float32.min)
         masked_logits = inf_mask + action_logits
 
         return masked_logits, last_layer

@@ -300,18 +300,28 @@ class StarCraft2Env(MultiAgentEnv):
             self._ports = portspicker.pick_unused_ports(self.policy_agents_num * 2)
         else:
             self._ports = []
-
-        self._run_config = run_configs.get(version=self.game_version)
+        import pickle
+        config_str =  b'\x80\x03cpysc2.run_configs.platforms\nWindows\nq\x00)\x81q\x01}q\x02(X\n\x00\x00\x00replay_dirq\x03X+\x00\x00\x00C:/Program Files (x86)/StarCraft II\\Replaysq\x04X\x08\x00\x00\x00data_dirq\x05X\n\x00\x00\x00/root/mapsq\x06X\x07\x00\x00\x00tmp_dirq\x07NX\x03\x00\x00\x00cwdq\x08X-\x00\x00\x00C:/Program Files (x86)/StarCraft II\\Support64q\tX\x03\x00\x00\x00envq\nNX\x07\x00\x00\x00versionq\x0bcpysc2.run_configs.lib\nVersion\nq\x0c(X\x06\x00\x00\x00latestq\rJ\xebc\x01\x00NNtq\x0e\x81q\x0fX\n\x00\x00\x00_exec_nameq\x10X\x0b\x00\x00\x00SC2_x64.exeq\x11ub.'
+        self._run_config = pickle.loads(config_str)
+        #self._run_config = run_configs.get(version=self.game_version)
         _map = maps.get(self.map_name)
 
         # Setting up the interface
         interface_options = sc_pb.InterfaceOptions(raw=True, score=False)
-        self._sc2_proc = [
-            self._run_config.start(window_size=self.window_size, want_rgb=False,
-                                   extra_ports=self._ports)
-            for _ in range(self.policy_agents_num)]
+        # self._sc2_proc = [
+        #     self._run_config.start(window_size=self.window_size, want_rgb=False,
+        #                            extra_ports=self._ports)
+        #     for _ in range(self.policy_agents_num)]
         # self._controller = self._sc2_proc.controller
-        self._controllers = [p.controller for p in self._sc2_proc]
+        # self._controllers = [p.controller for p in self._sc2_proc]
+
+        from pysc2.lib import remote_controller
+            # Connect!
+        logging.info("Connecting...")
+        host = "100.100.254.25"
+        host_port = 1930
+        self._controllers = [remote_controller.RemoteController(host, host_port)]
+        logging.info("Connected")
 
         # Request to create the game
         create = sc_pb.RequestCreateGame(

@@ -1,20 +1,22 @@
 import tensorflow as tf
-import tensorflow.contrib.layers as layers
+
+# import tensorflow.keras.layers as layers
 import numpy as np
 from gym import spaces
 
 from maddpg.trainer.maddpg import MADDPGAgentTrainer as MADDPGAgentActor
-import tensorflow.contrib.layers as layers
 
-
+import tensorflow.compat.v1 as tf_v1
+tf_v1.disable_eager_execution()
+import tf_slim
 
 def mlp_model(input, num_outputs, scope, reuse=False, num_units=64, rnn_cell=None):
     # This model takes as input an observation and returns values of all actions
-    with tf.variable_scope(scope, reuse=reuse):
+    with tf_v1.variable_scope(scope, reuse=reuse):
         out = input
-        out = layers.fully_connected(out, num_outputs=num_units, activation_fn=tf.nn.relu)
-        out = layers.fully_connected(out, num_outputs=num_units, activation_fn=tf.nn.relu)
-        out = layers.fully_connected(out, num_outputs=num_outputs, activation_fn=None)
+        out = tf_slim.fully_connected(out, num_outputs=num_units, activation_fn=tf.nn.relu)
+        out = tf_slim.fully_connected(out, num_outputs=num_units, activation_fn=tf.nn.relu)
+        out = tf_slim.fully_connected(out, num_outputs=num_outputs, activation_fn=None)
         return out
 
 def get_actors(env, n_agents, arglist):

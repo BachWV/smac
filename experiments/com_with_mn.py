@@ -28,6 +28,7 @@ print(args)
 
 
 def send_message(agent_id, agent_host, target_host):
+    print(f'python3 experiments/node_send.py -i {target_host.IP()} -d {agent_id}')
     result = agent_host.cmd(f'python3 experiments/node_send.py -i {target_host.IP()} -d {agent_id}')
     logging.info(f'------------------agent{agent_id} status: {result}')
 
@@ -78,26 +79,30 @@ class CenteredMultiLinkTopo(Topo):
     """
     centered topology with multiple links
     """
-    def __init__(self):
+    def __init__(self,a_host,c_host,n_agents):
+        self.a_host = a_host
+        self.c_host = c_host
+        self.n_agents = n_agents
         Topo.__init__(self)
         self.receive_pros = []
+
 
     def build(self):
         # Switch
         self.addSwitch('s0')
 
         # Agent hosts
-        for i in range(n_agents):
-            a_host[i] = self.addHost('a{}'.format(i))
-            self.addLink(a_host[i], 's0', bw=args.bandwidth, delay='20ms')
+        for i in range(self.n_agents):
+            self.a_host[i] = self.addHost('a{}'.format(i))
+            self.addLink(self.a_host[i], 's0', bw=args.bandwidth, delay='20ms')
 
         # Central host
-        c_host[0] = self.addHost('c0')
+        self.c_host[0] = self.addHost('c0')
         self.addLink('c0', 's0', bw=args.bandwidth, delay='20ms')
 
     def receiver_set_up(self, net):
-        for agent_id in range(n_agents):
-            center_host = net.get(c_host[0])
+        for agent_id in range(self.n_agents):
+            center_host = net.get(self.c_host[0])
             receive_pro = center_host.popen(
                 f'python3 experiments/node_recv.py -i {center_host.IP()} -d {agent_id}')
             self.receive_pros.append(receive_pro)
@@ -106,9 +111,9 @@ class CenteredMultiLinkTopo(Topo):
 
     def sender_send(self, net):
         threads = []
-        for i in range(n_agents):
-            agent_host = net.get(a_host[i])
-            target_host = net.get(c_host[0])
+        for i in range(self.n_agents):
+            agent_host = net.get(self.a_host[i])
+            target_host = net.get(self.c_host[0])
             t = Thread(target=send_message, args=(i, agent_host, target_host))
             t.start()
             threads.append(t)

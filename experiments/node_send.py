@@ -15,6 +15,6 @@ args = parser.parse_args()
 
 obs = np.load(f'shared_buffer/message_to_sent/agent_{args.agent}_obs.npy')
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.sendto(obs.tostring(), (args.ip, START_PORT + args.agent))
+s.sendto(obs.tobytes(), (args.ip, START_PORT + args.agent))
 print('[node_send send ok.]')
 s.close()

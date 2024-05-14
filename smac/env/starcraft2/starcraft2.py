@@ -319,7 +319,7 @@ class StarCraft2Env(MultiAgentEnv):
             # Connect!
         logging.info("Connecting...")
         host = "100.100.254.25"
-        host_port = 1930
+        host_port = 11912
         self._controllers = [remote_controller.RemoteController(host, host_port)]
         logging.info("Connected")
 

@@ -1,0 +1,39 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger:pysc BATTLE",
+            "type": "python",
+            "request": "launch",
+            "module": "experiments.battle",
+            "args": [
+               
+            ],
+            "console": "integratedTerminal"
+
+        },
+        {
+            "name": "Python Debugger:pysc battle and com",
+            "type": "python",
+            "request": "launch",
+            "module": "experiments.battle_and_com",
+            "args": [
+               
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python Debugger:com_with_mn",
+            "type": "python",
+            "request": "launch",
+            "module": "experiments.com_with_mn",
+            "args": [
+               
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}
